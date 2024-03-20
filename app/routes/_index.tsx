@@ -31,7 +31,12 @@ export default function Index() {
           </a>
         </li>
         <li>
-          <a target="_blank" href="https://remix.run/docs" rel="noreferrer">
+          <a
+            target="_blank"
+            href="https://remix.run/docs"
+            rel="noreferrer"
+            className="p-2 block bg-blue-300"
+          >
             Remix Docs
           </a>
         </li>
