@@ -7,10 +7,12 @@ import { cn } from "~/utils";
 const buttonVariants = cva("", {
   variants: {
     variant: {
-      destructive: "bg-red text-body-m text-white hover:bg-red/10",
-      primary: "bg-mainPurple text-white ",
+      destructive:
+        "bg-red text-body-m text-white hover:bg-red/10 transition-all hover:bg-redHover",
+      primary:
+        "bg-mainPurple text-white hover:bg-mainPurpleHover transition-all ",
 
-      secondary: "bg-mainPurpleSecondary text-mainPurple ",
+      secondary: "bg-mainPurpleSecondary text-mainPurple transition-all ",
     },
     size: {
       sm: "min-h-[40px] text-body-m py-2 px-6 rounded-3xl",

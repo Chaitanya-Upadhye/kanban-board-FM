@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useWindowSize } from "~/components/layout/Header";
 
 import Sidebar, { ShowSidebarIcon } from "~/components/layout/Sidebar";
-import type { Database } from "~/db/types/db-types";
 import { requireUserSession, getSupabase } from "~/session";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -22,7 +21,7 @@ function App() {
   const userBoards = useLoaderData<typeof loader>();
   const { width } = useWindowSize();
   const [isActive, setIsActive] = useState(true);
-
+  const { supabase } = useOutletContext();
   return (
     <>
       <div className="grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] h-full">
@@ -33,7 +32,9 @@ function App() {
         <aside
           className={`col-start-1 w-[300px] row-span-full border-r  border-r-linesLight  rounded-sm transition-all ${
             !isActive ? "ml-[-300px]  " : ""
-          }`}
+          } 
+          ${width <= 576 ? "hidden" : "block"}
+          `}
         >
           <Sidebar
             boards={userBoards}
@@ -43,7 +44,9 @@ function App() {
         </aside>
 
         <main className="max-h-[100vh] overflow-y-hidden row-span-full ">
-          <Outlet context={{ isActive, setIsActive, userBoards }}></Outlet>
+          <Outlet
+            context={{ supabase, isActive, setIsActive, userBoards }}
+          ></Outlet>
         </main>
         {/* <footer className="h-14 bg-slate-700 text-slate-50 col-start-2 col-span-1">
         Footer

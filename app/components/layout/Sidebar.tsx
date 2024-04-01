@@ -157,9 +157,9 @@ export const useTheme = () => {
   const [theme, setTheme] = useState("light");
 
   useEffect(() => {
-    const initialTheme = document.documentElement.getAttribute("data-theme");
-    if (initialTheme && (initialTheme === "dark" || initialTheme === "light")) {
-      setTheme(initialTheme);
+    const initialTheme = window.matchMedia("(prefers-color-scheme: dark)");
+    if (initialTheme.matches) {
+      setTheme("dark");
     }
   }, []);
 

@@ -20,7 +20,12 @@ function Header({ cols = [], title = "", board }) {
   const { width } = useWindowSize();
   const [showEditBoardModal, setShowEditBoardModal] = useState(false);
   const [showDeleteBoardModal, setShowDeleteBoardModal] = useState(false);
-  const { isActive, setIsActive, userBoards: boards } = useOutletContext();
+  const {
+    isActive,
+    setIsActive,
+    userBoards: boards,
+    supabase,
+  } = useOutletContext();
   const navigate = useNavigate();
   const [isBoardMenuOpen, setIsBoardMenuOpen] = useState(false);
   const [showAddBoardModal, setShowAddBoardModal] = useState(false);
@@ -34,138 +39,132 @@ function Header({ cols = [], title = "", board }) {
   if (width <= 576) {
     return (
       <div
-        className={`bg-white h-24 px-4 py-5  border-b border-b-linesLight flex justify-between items-center
+        className={`bg-white h-16 px-4 py-5  border-b border-b-linesLight flex justify-between items-center
         `}
       >
-        {!isActive ? (
-          <div className=" transition-all flex">
-            <div className="pt-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25">
-                <g fill="#635FC7" fill-rule="evenodd">
-                  <rect width="6" height="25" rx="2" />
-                  <rect opacity=".75" x="9" width="6" height="25" rx="2" />
-                  <rect opacity=".5" x="18" width="6" height="25" rx="2" />
-                </g>
-              </svg>
-            </div>{" "}
-            <Dialog.Root
-              open={isBoardMenuOpen}
-              onOpenChange={setIsBoardMenuOpen}
-            >
-              <Dialog.Trigger asChild>
-                <button
-                  className="cursor:pointer  mr-2 flex gap-4"
-                  aria-label="Customise options"
+        <div className=" transition-all flex">
+          <div className="pt-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="25">
+              <g fill="#635FC7" fill-rule="evenodd">
+                <rect width="6" height="25" rx="2" />
+                <rect opacity=".75" x="9" width="6" height="25" rx="2" />
+                <rect opacity=".5" x="18" width="6" height="25" rx="2" />
+              </g>
+            </svg>
+          </div>{" "}
+          <Dialog.Root open={isBoardMenuOpen} onOpenChange={setIsBoardMenuOpen}>
+            <Dialog.Trigger asChild>
+              <button
+                className="cursor:pointer  mr-2 flex"
+                aria-label="Customise options"
+              >
+                <span className="ml-4  block text-heading-xl text-black mr-2">
+                  {title}
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="10"
+                  height="7"
+                  className="mt-3"
                 >
-                  <span className="ml-8  block text-heading-xl text-black mr-4">
-                    {title}
-                  </span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="10"
-                    height="7"
-                    className="mt-3"
-                  >
-                    <path
-                      stroke="#635FC7"
-                      stroke-width="2"
-                      fill="none"
-                      d="m1 1 4 4 4-4"
-                    />
-                  </svg>
-                </button>
-              </Dialog.Trigger>
-              <Dialog.Portal>
-                <Dialog.Overlay
-                  id="modal-overlay"
-                  className="bg-black/50 data-[state=open]:animate-overlayShow fixed right-0 left-0 bottom-0 top-[96px]"
-                />
+                  <path
+                    stroke="#635FC7"
+                    stroke-width="2"
+                    fill="none"
+                    d="m1 1 4 4 4-4"
+                  />
+                </svg>
+              </button>
+            </Dialog.Trigger>
+            <Dialog.Portal>
+              <Dialog.Overlay
+                id="modal-overlay"
+                className="bg-black/50 data-[state=open]:animate-overlayShow fixed right-0 left-0 bottom-0 top-[64px]"
+              />
 
-                <Dialog.Content className=" rounded-md data-[state=open]:animate-contentShow fixed top-[280px] left-[50%] max-h-[85vh] w-[264px] max-w-[450px] translate-x-[-50%] translate-y-[-50%]  bg-white shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
-                  <div className="flex flex-col justify-between h-full">
-                    <ul className="flex-1 font-medium flex flex-col mt-4 mr-6 ">
-                      <li className="text-heading-s pl-8 mb-4 text-mediumGrey">{`ALL BOARDS (${boards?.length})`}</li>
-                      {boards.map((b: any) => {
-                        const { id: boardId, title } = b;
-                        return (
-                          <li
-                            key={boardId}
-                            className={` hover:bg-slate-50   flex gap-4 items-end cursor-pointer pl-8   text-heading-m  ${
-                              boardId == board?.id
-                                ? "bg-mainPurple rounded-r-3xl text-white py-4"
-                                : "text-mediumGrey hover:bg-mainPurple/10 hover:text-mainPurple py-4 rounded-r-3xl"
-                            } `}
-                            onClick={() => {
-                              navigate(`/app/boards/${boardId}`);
-                              setIsBoardMenuOpen(false);
-                            }}
-                          >
-                            <svg
-                              width="16"
-                              height="16"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.888 2.888 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.889V8.444H1.333Zm8.445-1.333V1.333h-6.89A1.556 1.556 0 0 0 1.334 2.89V7.11h8.445Zm4.889-1.333H11.11v4.444h3.556V5.778Zm0 5.778H11.11v3.11h2a1.556 1.556 0 0 0 1.556-1.555v-1.555Zm0-7.112V2.89a1.555 1.555 0 0 0-1.556-1.556h-2v3.111h3.556Z"
-                                fill={
-                                  boardId == board?.id ? "white" : "#828FA3"
-                                }
-                              />
-                            </svg>
-                            <span className="text-slate-500 hover:text-blue-600 text-md ">
-                              {title}
-                            </span>
-                          </li>
-                        );
-                      })}
-                      <li
-                        id={"create-board"}
-                        className={` hover:bg-slate-50   flex gap-4 items-center cursor-pointer pl-8 py-4   text-heading-m  `}
-                        onClick={() => {
-                          setShowAddBoardModal(true);
-                          setIsBoardMenuOpen(false);
-                        }}
-                      >
-                        <svg
-                          width="16"
-                          height="16"
-                          xmlns="http://www.w3.org/2000/svg"
+              <Dialog.Content className=" rounded-md data-[state=open]:animate-contentShow fixed top-[240px] left-[50%] max-h-[85vh] w-[264px] max-w-[450px] translate-x-[-50%] translate-y-[-50%]  bg-white shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none">
+                <div className="flex flex-col justify-between h-full">
+                  <ul className="flex-1 font-medium flex flex-col mt-4 mr-6 ">
+                    <li className="text-heading-s pl-8 mb-4 text-mediumGrey">{`ALL BOARDS (${boards?.length})`}</li>
+                    {boards.map((b: any) => {
+                      const { id: boardId, title } = b;
+                      return (
+                        <li
+                          key={boardId}
+                          className={` hover:bg-slate-50   flex gap-4 items-end cursor-pointer pl-8   text-heading-m  ${
+                            boardId == board?.id
+                              ? "bg-mainPurple rounded-r-3xl text-white py-4"
+                              : "text-mediumGrey hover:bg-mainPurple/10 hover:text-mainPurple py-4 rounded-r-3xl"
+                          } `}
+                          onClick={() => {
+                            navigate(`/app/boards/${boardId}`);
+                            setIsBoardMenuOpen(false);
+                          }}
                         >
-                          <path
-                            d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.888 2.888 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.889V8.444H1.333Zm8.445-1.333V1.333h-6.89A1.556 1.556 0 0 0 1.334 2.89V7.11h8.445Zm4.889-1.333H11.11v4.444h3.556V5.778Zm0 5.778H11.11v3.11h2a1.556 1.556 0 0 0 1.556-1.555v-1.555Zm0-7.112V2.89a1.555 1.555 0 0 0-1.556-1.556h-2v3.111h3.556Z"
-                            fill={"hsl(242, 48%, 58%"}
-                          />
-                        </svg>
-                        <span className="text-mainPurple text-heading-m ">
-                          {"+ Create Board"}
-                        </span>
-                      </li>
-                    </ul>
-                    <div className=" flex justify-center gap-4 items-center py-6 bg-lightGreyLightBg mx-8 rounded-md h-[48px] mt-4 mb-6">
-                      <div>
-                        <IconLight />
-                      </div>
-                      <Switch.Root
-                        onCheckedChange={toggleTheme}
-                        checked={theme === "dark"}
-                        className="w-[40px] h-[20px] bg-mainPurple rounded-full relative  data-[state=checked]:bg-mainPurple outline-none cursor-pointer"
-                        id="airplane-mode"
-                        style={{
-                          "-webkit-tap-highlight-color": "rgba(0, 0, 0, 0)",
-                        }}
+                          <svg
+                            width="16"
+                            height="16"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.888 2.888 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.889V8.444H1.333Zm8.445-1.333V1.333h-6.89A1.556 1.556 0 0 0 1.334 2.89V7.11h8.445Zm4.889-1.333H11.11v4.444h3.556V5.778Zm0 5.778H11.11v3.11h2a1.556 1.556 0 0 0 1.556-1.555v-1.555Zm0-7.112V2.89a1.555 1.555 0 0 0-1.556-1.556h-2v3.111h3.556Z"
+                              fill={boardId == board?.id ? "white" : "#828FA3"}
+                            />
+                          </svg>
+                          <span className="text-slate-500 hover:text-blue-600 text-md ">
+                            {title}
+                          </span>
+                        </li>
+                      );
+                    })}
+                    <li
+                      id={"create-board"}
+                      className={` hover:bg-slate-50   flex gap-4 items-center cursor-pointer pl-8 py-4   text-heading-m  `}
+                      onClick={() => {
+                        setShowAddBoardModal(true);
+                        setIsBoardMenuOpen(false);
+                      }}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        xmlns="http://www.w3.org/2000/svg"
                       >
-                        <Switch.Thumb className="block w-[14px] h-[14px] bg-white rounded-full shadow-[0_2px_2px] shadow-blackA4 transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[24px]" />
-                      </Switch.Root>
-                      <div>
-                        <IconDark />
-                      </div>
+                        <path
+                          d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.888 2.888 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.889V8.444H1.333Zm8.445-1.333V1.333h-6.89A1.556 1.556 0 0 0 1.334 2.89V7.11h8.445Zm4.889-1.333H11.11v4.444h3.556V5.778Zm0 5.778H11.11v3.11h2a1.556 1.556 0 0 0 1.556-1.555v-1.555Zm0-7.112V2.89a1.555 1.555 0 0 0-1.556-1.556h-2v3.111h3.556Z"
+                          fill={"hsl(242, 48%, 58%"}
+                        />
+                      </svg>
+                      <span className="text-mainPurple text-heading-m ">
+                        {"+ Create Board"}
+                      </span>
+                    </li>
+                  </ul>
+                  <div className=" flex justify-center gap-4 items-center py-6 bg-lightGreyLightBg mx-8 rounded-md h-[48px] mt-4 mb-6">
+                    <div>
+                      <IconLight />
+                    </div>
+                    <Switch.Root
+                      onCheckedChange={toggleTheme}
+                      checked={theme === "dark"}
+                      className="w-[40px] h-[20px] bg-mainPurple rounded-full relative  data-[state=checked]:bg-mainPurple outline-none cursor-pointer"
+                      id="airplane-mode"
+                      style={{
+                        "-webkit-tap-highlight-color": "rgba(0, 0, 0, 0)",
+                      }}
+                    >
+                      <Switch.Thumb className="block w-[14px] h-[14px] bg-white rounded-full shadow-[0_2px_2px] shadow-blackA4 transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[24px]" />
+                    </Switch.Root>
+                    <div>
+                      <IconDark />
                     </div>
                   </div>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
-          </div>
-        ) : null}
+                </div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
+        </div>
+
         <div className="flex items-center gap-4">
           <Button
             variant={"primary"}
@@ -230,9 +229,18 @@ function Header({ cols = [], title = "", board }) {
                   onSelect={() => {
                     setShowDeleteBoardModal(true);
                   }}
-                  className="cursor-pointer group text-body-l text-red text-[13px] leading-none text-red-700 rounded-[3px] flex gap-2 items-center  h-[25px] px-[5px] relative  select-none outline-none data-[disabled]:text-slate-300 data-[disabled]:pointer-events-none data-[highlighted]:bg-red-100 data-[highlighted]:text-red-500"
+                  className="mb-4 cursor-pointer group text-body-l text-red text-[13px] leading-none text-red-700 rounded-[3px] flex gap-2 items-center  h-[25px] px-[5px] relative  select-none outline-none data-[disabled]:text-slate-300 data-[disabled]:pointer-events-none data-[highlighted]:bg-red-100 data-[highlighted]:text-red-500"
                 >
                   Delete Board
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  onSelect={async () => {
+                    await supabase.auth.signOut();
+                    navigate("/login");
+                  }}
+                  className="cursor-pointer group text-body-l text-redHover text-[13px] leading-none text-red-700 rounded-[3px] flex gap-2 items-center  h-[25px] px-[5px] relative  select-none outline-none data-[disabled]:text-slate-300 data-[disabled]:pointer-events-none data-[highlighted]:bg-red-100 data-[highlighted]:text-red-500"
+                >
+                  Logout
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Portal>
@@ -336,9 +344,18 @@ function Header({ cols = [], title = "", board }) {
                 onSelect={() => {
                   setShowDeleteBoardModal(true);
                 }}
-                className="cursor-pointer group text-body-l text-red text-[13px] leading-none text-red-700 rounded-[3px] flex gap-2 items-center  h-[25px] px-[5px] relative  select-none outline-none data-[disabled]:text-slate-300 data-[disabled]:pointer-events-none data-[highlighted]:bg-red-100 data-[highlighted]:text-red-500"
+                className="mb-4 cursor-pointer group text-body-l text-red text-[13px] leading-none text-red-700 rounded-[3px] flex gap-2 items-center  h-[25px] px-[5px] relative  select-none outline-none data-[disabled]:text-slate-300 data-[disabled]:pointer-events-none data-[highlighted]:bg-red-100 data-[highlighted]:text-red-500"
               >
                 Delete Board
+              </DropdownMenu.Item>
+              <DropdownMenu.Item
+                onSelect={async () => {
+                  await supabase.auth.signOut();
+                  navigate("/login");
+                }}
+                className="cursor-pointer group text-body-l text-redHover text-[13px] leading-none text-red-700 rounded-[3px] flex gap-2 items-center  h-[25px] px-[5px] relative  select-none outline-none data-[disabled]:text-slate-300 data-[disabled]:pointer-events-none data-[highlighted]:bg-red-100 data-[highlighted]:text-red-500"
+              >
+                Logout
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
