@@ -26,7 +26,10 @@ function ModalContent({
 }) {
   return (
     <Dialog.Portal>
-      <Dialog.Overlay className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0" />
+      <Dialog.Overlay
+        id="modal-overlay"
+        className="bg-black/50 data-[state=open]:animate-overlayShow fixed inset-0"
+      />
       <Dialog.Content className="bg-white fixed top-[300px] left-1/2 -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-contentShow max-h-[60%] rounded-md md:w-[480px] w-[90%]  overflow-y-auto  p-8">
         {/* <Dialog.Title className="text-heading-l">{title}</Dialog.Title> */}
 

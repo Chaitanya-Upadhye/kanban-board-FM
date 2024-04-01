@@ -4,24 +4,55 @@
 @tailwind components;
 @tailwind utilities;
 
-table {
-  border-collapse: collapse;
+:root {
+  /* For hsl(198deg 93% 60% / <alpha-value>) */
+
+  --black: 237deg 100% 4%;
+  --veryDarkGreyDarkBg: 235deg 16% 15%;
+  --darkGrey: 235deg 12% 19%;
+  --linesDark: 235deg 12% 27%;
+  --mediumGrey: 216deg 15% 57%;
+  --linesLight: 221deg 69% 94%;
+  --lightGreyLightBg: 220deg 69% 97%;
+  --white: 0deg 0% 100%;
+  --mainPurple: 242deg 48% 58%;
+  --mainPurpleHover: 242deg 100% 82%;
+  --red: 0deg 78% 63%;
+  --redHover: 0deg 100% 80%;
+  --mainPurpleSecondary: 245deg 52% 96%;
+}
+:root[data-theme="dark"] {
+  --black: 0deg 0% 100%;
+  --veryDarkGreyDarkBg: 235deg 16% 15%;
+  --darkGrey: 235deg 12% 19%;
+  --linesDark: 235deg 12% 27%;
+  --mediumGrey: 216deg 15% 57%;
+  --linesLight: 235deg 12% 27%;
+  --lightGreyLightBg: 235deg 16% 15%;
+  --white: 235deg 12% 19%;
+  --mainPurple: 242deg 48% 58%;
+  --mainPurpleHover: 242deg 100% 82%;
+  --red: 0deg 78% 63%;
+  --redHover: 0deg 100% 80%;
+  --mainPurpleSecondary: 0deg 0% 100%;
+
+  /* Styles for dark theme */
+}
+input {
+  font-size: small;
+}
+html[data-theme="dark"] input {
+  background-color: var(--darkGrey);
+  color: white;
+}
+html[data-theme="dark"] #modal-overlay {
+  background-color: hsl(var(--black) / 0.1);
 }
 
-th,
-td {
-  padding: 0.5rem;
+html[data-theme="dark"] #logo-mark {
+  fill: white;
 }
 
-th {
-  text-align: left;
-}
-/* tr:nth-of-type(2n) {
-  background: hsl(0 0% 0% / 0.2);
-} */
-td:nth-child(2) {
-  text-transform: capitalize;
-}
 /* width */
 ::-webkit-scrollbar {
   width: 5px;

@@ -10,7 +10,7 @@ const buttonVariants = cva("", {
       destructive: "bg-red text-body-m text-white hover:bg-red/10",
       primary: "bg-mainPurple text-white ",
 
-      secondary: "bg-mainPurple/10 text-mainPurple ",
+      secondary: "bg-mainPurpleSecondary text-mainPurple ",
     },
     size: {
       sm: "min-h-[40px] text-body-m py-2 px-6 rounded-3xl",

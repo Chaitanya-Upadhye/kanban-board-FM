@@ -38,7 +38,7 @@ export const EditTaskModal = ({ open, setOpen, editedTask, cols }) => {
         <Modal.Title>
           {!isBeingEdited ? (
             <div className="flex justify-between items-center">
-              <h2 className="text-heading-l">{editedTask?.title}</h2>{" "}
+              <h2 className="text-heading-l text-black">{editedTask?.title}</h2>{" "}
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
                   <button
@@ -80,7 +80,7 @@ export const EditTaskModal = ({ open, setOpen, editedTask, cols }) => {
               </DropdownMenu.Root>
             </div>
           ) : (
-            <span className="text-heading-l  ">Edit Task</span>
+            <span className="text-heading-l text-black  ">Edit Task</span>
           )}
         </Modal.Title>
         {isBeingEdited ? (
@@ -222,7 +222,7 @@ export const AddTaskModal = ({ open, setOpen, cols }) => {
       <Modal.Content>
         <Modal.Title>
           <>
-            <span className="text-heading-l  ">Add Task</span>
+            <span className="text-heading-l text-black  ">Add Task</span>
           </>
         </Modal.Title>
         <fetcher.Form

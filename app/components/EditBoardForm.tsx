@@ -18,7 +18,7 @@ export const EditBoardModal = ({ open, setOpen, editedBoard }) => {
     <Modal open={open} onOpenChange={setOpen}>
       <Modal.Content>
         <Modal.Title>
-          <span className="text-heading-l  ">Edit Board</span>
+          <span className="text-heading-l text-black  ">Edit Board</span>
         </Modal.Title>
         <EditBoardForm editedBoard={editedBoard} setOpen={setOpen} />
       </Modal.Content>
@@ -58,7 +58,7 @@ export const AddBoardModal = ({ open, setOpen }) => {
       <Modal.Content>
         <Modal.Title>
           <>
-            <span className="text-heading-l  ">Create Board</span>
+            <span className="text-heading-l text-black ">Create Board</span>
           </>
         </Modal.Title>
         <fetcher.Form method="post" className="w-full" action={`/app/boards`}>

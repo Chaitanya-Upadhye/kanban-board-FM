@@ -240,7 +240,7 @@ const Task = ({ task, onClick = () => {} }) => {
     <>
       <div
         draggable
-        className={`bg-white rounded-lg group  px-4 py-6 shadow-mds font-normal text-lg hover:cursor-grab min-h-[88px] shadow-task-card
+        className={`bg-white rounded-lg group  px-4 py-6 shadow-mds font-normal text-black hover:cursor-grab min-h-[88px] shadow-task-card
       ${
         taskFetcher?.state === "submitting"
           ? "  bg-slate-300 text-slate-400"
