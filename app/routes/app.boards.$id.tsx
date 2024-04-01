@@ -12,7 +12,7 @@ import {
   useSubmit,
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import EditTaskForm, { EditTaskModal } from "~/components/EditTaskForm";
+import { EditTaskModal } from "~/components/EditTaskForm";
 import Modal from "~/components/Modal";
 import Header from "~/components/layout/Header";
 import { getSupabase, requireUserSession } from "~/session";
@@ -39,7 +39,67 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
+  const { id = 0 } = params;
+
+  if (request?.method == "PUT") {
+    const formData = await request.formData();
+
+    let { title, totalColumns = 0, ...rest } = Object.fromEntries(formData);
+    let columns = [];
+    for (let i = 0; i < +totalColumns; i++) {
+      columns.push({
+        id: rest[`columns[${i}][id]`],
+        title: rest[`columns[${i}][title]`],
+        board_id: +id,
+      });
+    }
+    const { data } = await getSupabase({ request })
+      .from("board_columns")
+      .select(`id,title,board_id`)
+      .eq("board_id", +id);
+
+    const newCols = columns?.filter((c) => c?.id === "new");
+    const deletedCols = data?.filter(
+      (c) => !columns?.find((col) => col?.id?.toString() === c?.id?.toString())
+    );
+    const updatedCols = columns?.filter((c) => c?.id !== "new");
+
+    const { error: errorBoardupdate } = await getSupabase({ request })
+      .from("board")
+      .update({
+        title,
+      })
+      .eq("id", +id);
+
+    if (newCols?.length) {
+      const { error: errorInsertCols } = await getSupabase({ request })
+        .from("board_columns")
+        .insert([...newCols?.map((c) => ({ title: c.title, board_id: +id }))]);
+    }
+
+    const { error: errorUpdateCols } = await getSupabase({ request })
+      .from("board_columns")
+      .upsert([...updatedCols]);
+
+    if (deletedCols?.length) {
+      const { error: errorDeleteCols } = await getSupabase({ request })
+        .from("board_columns")
+        .delete()
+        .in("id", [...deletedCols?.map((c) => +c?.id)]);
+    }
+    return { title, board_id: id };
+  }
+  if (request.method === "DELETE") {
+    const { error } = await getSupabase({ request })
+      .from("board")
+      .delete()
+      .eq("id", +id);
+
+    return {
+      error,
+    };
+  }
   const formData = await request.formData();
   const taskDetails = JSON.parse(formData.get("taskDetails") as string);
 
@@ -79,10 +139,10 @@ function BoardHome() {
     <>
       <header className=" col-start-2 col-span-1">
         {" "}
-        <Header cols={board?.columns} />{" "}
+        <Header cols={board?.columns} title={board?.title} board={board} />{" "}
       </header>
       <div
-        className={`flex gap-4 h-[90%] overflow-x-auto p-6 bg-lightGreyLightBg`}
+        className={`flex gap-4 h-[90%] overflow-x-auto p-6 overflow-y-hidden bg-lightGreyLightBg`}
       >
         {board?.columns?.map((col) => {
           return (
@@ -116,7 +176,7 @@ function BoardHome() {
                   {col.title?.toUpperCase()}
                 </span>
               </span>
-              <div className="flex flex-col gap-[20px] mt-6">
+              <div className="flex flex-col gap-[20px] mt-6 max-h-[80vh] hover:overflow-y-auto overflow-y-hidden pr-1">
                 <TaskList
                   tasksState={[...getReconciledTasks()]}
                   col={col}
@@ -180,7 +240,7 @@ const Task = ({ task, onClick = () => {} }) => {
     <>
       <div
         draggable
-        className={`bg-white rounded-lg  px-4 py-6 shadow-mds font-normal text-lg hover:cursor-grab min-h-[88px] shadow-task-card
+        className={`bg-white rounded-lg group  px-4 py-6 shadow-mds font-normal text-lg hover:cursor-grab min-h-[88px] shadow-task-card
       ${
         taskFetcher?.state === "submitting"
           ? "  bg-slate-300 text-slate-400"
@@ -194,9 +254,15 @@ const Task = ({ task, onClick = () => {} }) => {
         key={task?.id}
         onClick={onClick}
       >
-        <span className="text-heading-m">{task?.title}</span>
-        <span className="text-mediumGrey text-body-m block pt-2">
-          0 of 3 subtasks
+        <span className="text-heading-m group-hover:text-mainPurple">
+          {task?.title}
+        </span>
+        <span className="text-mediumGrey  text-body-m block pt-2">
+          {task?.subTasks?.length
+            ? `${task?.subTasks?.filter((t) => t?.done === true)?.length} of ${
+                task?.subTasks?.length
+              } subtasks`
+            : "0 subtasks"}
         </span>
       </div>
     </>

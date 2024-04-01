@@ -34,11 +34,11 @@ td:nth-child(2) {
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #a5a5a5;
   border-radius: 5px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #c2c2c2;
 }

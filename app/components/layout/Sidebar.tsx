@@ -1,21 +1,18 @@
-import React from "react";
-import { GaugeCircle } from "lucide-react";
 import { useNavigate, useParams } from "@remix-run/react";
+import { AddBoardModal } from "../EditBoardForm";
+import { useState } from "react";
 
-function Sidebar({ boards }: { boards: any }) {
-  // const [boards, setBoards] = useState([]);
-
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     const { data } = await supabase.from("board").select();
-  //     setBoards(data);
-  //   }
-  //   fetchData();
-
-  //   return () => {};
-  // }, []);
+function Sidebar({
+  boards,
+  isActive = true,
+  setIsActive = () => {},
+}: {
+  boards: any;
+}) {
+  const [showAddBoardModal, setShowAddBoardModal] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
+
   return (
     <nav className="flex flex-col h-full ">
       <div className="pt-8 pl-8  h-[96px]">
@@ -34,58 +31,90 @@ function Sidebar({ boards }: { boards: any }) {
           </g>
         </svg>
       </div>
-      <ul className="flex-1 font-medium flex flex-col gap-4 mt-4 mr-6 ">
-        <li className="text-heading-s pl-8 text-mediumGrey">{`ALL BOARDS (${boards?.length})`}</li>
-        {boards.map((board: any) => {
-          const { id: boardId, title } = board;
-          return (
-            <li
-              key={boardId}
-              className={` hover:bg-slate-50   flex gap-4 items-center cursor-pointer pl-8   text-heading-m  ${
-                boardId == id
-                  ? "bg-mainPurple rounded-r-3xl text-white py-4"
-                  : "text-mediumGrey"
-              } `}
-              onClick={() => {
-                navigate(`/app/boards/${boardId}`);
-              }}
-            >
-              <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.888 2.888 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.889V8.444H1.333Zm8.445-1.333V1.333h-6.89A1.556 1.556 0 0 0 1.334 2.89V7.11h8.445Zm4.889-1.333H11.11v4.444h3.556V5.778Zm0 5.778H11.11v3.11h2a1.556 1.556 0 0 0 1.556-1.555v-1.555Zm0-7.112V2.89a1.555 1.555 0 0 0-1.556-1.556h-2v3.111h3.556Z"
-                  fill={boardId == id ? "white" : "#828FA3"}
-                />
-              </svg>
-              <span className="text-slate-500 hover:text-blue-600 text-md ">
-                {title}
-              </span>
-            </li>
-          );
-        })}{" "}
-      </ul>
-      <article className="border-t border-t-slate-300 py-4">
-        <div className="flex gap-2 items-center ">
-          <svg
-            className="w-6 h-6"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+      <div className="flex flex-col justify-between h-full">
+        <ul className="flex-1 font-medium flex flex-col mt-4 mr-6 ">
+          <li className="text-heading-s pl-8 mb-4 text-mediumGrey">{`ALL BOARDS (${boards?.length})`}</li>
+          {boards.map((board: any) => {
+            const { id: boardId, title } = board;
+            return (
+              <li
+                key={boardId}
+                className={` hover:bg-slate-50   flex gap-4 items-end cursor-pointer pl-8   text-heading-m  ${
+                  boardId == id
+                    ? "bg-mainPurple rounded-r-3xl text-white py-4"
+                    : "text-mediumGrey hover:bg-mainPurple/10 hover:text-mainPurple py-4 rounded-r-3xl"
+                } `}
+                onClick={() => {
+                  navigate(`/app/boards/${boardId}`);
+                }}
+              >
+                <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.888 2.888 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.889V8.444H1.333Zm8.445-1.333V1.333h-6.89A1.556 1.556 0 0 0 1.334 2.89V7.11h8.445Zm4.889-1.333H11.11v4.444h3.556V5.778Zm0 5.778H11.11v3.11h2a1.556 1.556 0 0 0 1.556-1.555v-1.555Zm0-7.112V2.89a1.555 1.555 0 0 0-1.556-1.556h-2v3.111h3.556Z"
+                    fill={boardId == id ? "white" : "#828FA3"}
+                  />
+                </svg>
+                <span className="text-slate-500 hover:text-blue-600 text-md ">
+                  {title}
+                </span>
+              </li>
+            );
+          })}
+          <li
+            id={"create-board"}
+            className={` hover:bg-slate-50   flex gap-4 items-center cursor-pointer pl-8 py-4   text-heading-m  `}
+            onClick={() => {
+              setShowAddBoardModal(true);
+            }}
           >
-            <circle cx="12" cy="8" r="5" />
-            <path d="M20 21a8 8 0 1 0-16 0" />
-          </svg>
-
-          <span className="text-slate-800 font-medium">username</span>
+            <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.888 2.888 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.889V8.444H1.333Zm8.445-1.333V1.333h-6.89A1.556 1.556 0 0 0 1.334 2.89V7.11h8.445Zm4.889-1.333H11.11v4.444h3.556V5.778Zm0 5.778H11.11v3.11h2a1.556 1.556 0 0 0 1.556-1.555v-1.555Zm0-7.112V2.89a1.555 1.555 0 0 0-1.556-1.556h-2v3.111h3.556Z"
+                fill={"hsl(242, 48%, 58%"}
+              />
+            </svg>
+            <span className="text-mainPurple text-heading-m ">
+              {"+ Create Board"}
+            </span>
+          </li>
+        </ul>
+        <div
+          className="mb-8 pl-8 flex gap-4 items-center text-heading-m cursor-pointer"
+          onClick={() => setIsActive(false)}
+        >
+          <HideSibebarIcon />{" "}
+          <span className="text-mediumGrey">Hide Sidebar</span>
         </div>
-      </article>
+      </div>
+      {showAddBoardModal ? (
+        <AddBoardModal
+          open={showAddBoardModal}
+          setOpen={setShowAddBoardModal}
+        />
+      ) : null}
     </nav>
   );
 }
+
+export const HideSibebarIcon = (props) => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="16" {...props}>
+      <path
+        d="M8.522 11.223a4.252 4.252 0 0 1-3.654-5.22l3.654 5.22ZM9 12.25A8.685 8.685 0 0 1 1.5 8a8.612 8.612 0 0 1 2.76-2.864l-.86-1.23A10.112 10.112 0 0 0 .208 7.238a1.5 1.5 0 0 0 0 1.524A10.187 10.187 0 0 0 9 13.75c.414 0 .828-.025 1.239-.074l-1-1.43A8.88 8.88 0 0 1 9 12.25Zm8.792-3.488a10.14 10.14 0 0 1-4.486 4.046l1.504 2.148a.375.375 0 0 1-.092.523l-.648.453a.375.375 0 0 1-.523-.092L3.19 1.044A.375.375 0 0 1 3.282.52L3.93.068a.375.375 0 0 1 .523.092l1.735 2.479A10.308 10.308 0 0 1 9 2.25c3.746 0 7.031 2 8.792 4.988a1.5 1.5 0 0 1 0 1.524ZM16.5 8a8.674 8.674 0 0 0-6.755-4.219A1.75 1.75 0 1 0 12.75 5v-.001a4.25 4.25 0 0 1-1.154 5.366l.834 1.192A8.641 8.641 0 0 0 16.5 8Z"
+        fill="#828FA3"
+      />
+    </svg>
+  );
+};
+export const ShowSidebarIcon = (props) => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="11" {...props}>
+      <path
+        d="M15.815 4.434A9.055 9.055 0 0 0 8 0 9.055 9.055 0 0 0 .185 4.434a1.333 1.333 0 0 0 0 1.354A9.055 9.055 0 0 0 8 10.222c3.33 0 6.25-1.777 7.815-4.434a1.333 1.333 0 0 0 0-1.354ZM8 8.89A3.776 3.776 0 0 1 4.222 5.11 3.776 3.776 0 0 1 8 1.333a3.776 3.776 0 0 1 3.778 3.778A3.776 3.776 0 0 1 8 8.89Zm2.889-3.778a2.889 2.889 0 1 1-5.438-1.36 1.19 1.19 0 1 0 1.19-1.189H6.64a2.889 2.889 0 0 1 4.25 2.549Z"
+        fill="#fff"
+      />
+    </svg>
+  );
+};
 
 export default Sidebar;

@@ -26,7 +26,7 @@ export const getSupabase = ({ request }: { request: Request }) => {
 
   return supabase;
 };
-async function getSession({ request }: { request: Request }) {
+export async function getSession({ request }: { request: Request }) {
   const supabase = getSupabase({ request });
   const {
     data: { session },

@@ -7,8 +7,7 @@ import { cn } from "~/utils";
 const buttonVariants = cva("", {
   variants: {
     variant: {
-      destructive:
-        "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+      destructive: "bg-red text-body-m text-white hover:bg-red/10",
       primary: "bg-mainPurple text-white ",
 
       secondary: "bg-mainPurple/10 text-mainPurple ",
