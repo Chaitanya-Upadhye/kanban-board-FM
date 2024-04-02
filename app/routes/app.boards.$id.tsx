@@ -3,7 +3,13 @@ import {
   json,
   type LoaderFunctionArgs,
 } from "@remix-run/node";
-import { useFetchers, useLoaderData, useSubmit, Await } from "@remix-run/react";
+import {
+  useFetchers,
+  useLoaderData,
+  useSubmit,
+  Await,
+  useParams,
+} from "@remix-run/react";
 import { useState, Suspense } from "react";
 import { Button } from "~/components/Button";
 import { EditBoardModal } from "~/components/EditBoardForm";
@@ -128,6 +134,7 @@ function usePendingItems() {
 function BoardHome() {
   let { board: boardDefferedPromise, tasks } = useLoaderData();
   const submit = useSubmit();
+  const { id } = useParams();
   const [openAddColModal, setOpenAddColModal] = useState(false);
 
   return (
@@ -192,7 +199,7 @@ function BoardHome() {
                           </span>
                         </span>
                         <div className="flex flex-col gap-[20px] mt-6 max-h-[80vh] hover:overflow-y-auto overflow-y-hidden pr-1">
-                          <Suspense fallback={"Loading"} key={Math.random()}>
+                          <Suspense fallback={"Loading"} key={id}>
                             <Await resolve={tasks}>
                               {(tasksResolved) => (
                                 <TaskList
