@@ -209,7 +209,7 @@ function BoardHome() {
         ) : null}
         <div
           id="new-col"
-          className=" rounded-md min-w-[280px] bg-[#e9effa] text-center px-14 cursor-pointer flex items-center justify-center "
+          className=" mt-10 rounded-md min-w-[280px] bg-[#e9effa] text-center px-14 cursor-pointer flex items-center justify-center "
           onClick={() => setOpenAddColModal(true)}
         >
           <p className="text-heading-xl text-mediumGrey"> + New Column</p>

@@ -38,11 +38,15 @@
 
   /* Styles for dark theme */
 }
-input {
+input,
+textarea {
   font-size: small;
 }
-html[data-theme="dark"] input,
-textarea {
+html[data-theme="dark"] input {
+  background-color: var(--darkGrey);
+  color: white;
+}
+html[data-theme="dark"] textarea {
   background-color: var(--darkGrey);
   color: white;
 }
