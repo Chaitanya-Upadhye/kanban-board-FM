@@ -154,7 +154,7 @@ function BoardHome() {
        invisible sm:visible
         `}
         >
-          <Suspense fallback={<Skeleton />}>
+          <Suspense fallback={<Skeleton />} key={id}>
             <Await resolve={userBoardsPromise}>
               {({ data }) => {
                 return (
@@ -170,12 +170,12 @@ function BoardHome() {
         </aside>
 
         <main className="max-h-[100vh] overflow-y-hidden row-span-full ">
-          <Suspense fallback={<Skeleton />}>
+          <Suspense fallback={<Skeleton />} key={id}>
             <Await resolve={boardPromise}>
               {({ data: board }) => (
                 <>
                   <header className=" col-start-2 col-span-1">
-                    <Suspense fallback={<Skeleton />}>
+                    <Suspense fallback={<Skeleton />} key={id}>
                       <Await resolve={userBoardsPromise}>
                         {({ data }) => {
                           return (
