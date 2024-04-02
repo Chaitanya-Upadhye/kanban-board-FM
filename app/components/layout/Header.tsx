@@ -15,17 +15,20 @@ import { useNavigate, useOutletContext } from "@remix-run/react";
 import { IconDark, IconLight, useTheme } from "./Sidebar";
 import * as Switch from "@radix-ui/react-switch";
 
-function Header({ cols = [], title = "", board }) {
+function Header({
+  cols = [],
+  title = "",
+  board,
+  isActive,
+  setIsActive,
+  userBoards: boards,
+  supabase,
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const { width } = useWindowSize();
   const [showEditBoardModal, setShowEditBoardModal] = useState(false);
   const [showDeleteBoardModal, setShowDeleteBoardModal] = useState(false);
-  const {
-    isActive,
-    setIsActive,
-    userBoards: boards,
-    supabase,
-  } = useOutletContext();
+
   const navigate = useNavigate();
   const [isBoardMenuOpen, setIsBoardMenuOpen] = useState(false);
   const [showAddBoardModal, setShowAddBoardModal] = useState(false);

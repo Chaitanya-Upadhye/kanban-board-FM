@@ -1,15 +1,9 @@
-/**
- * By default, Remix will handle generating the HTTP Response for you.
- * You are free to delete this file if you'd like to, but if you ever want it revealed again, you can run `npx remix reveal` ✨
- * For more information, see https://remix.run/file-conventions/entry.server
- */
-
 import { PassThrough } from "node:stream";
 
 import type { AppLoadContext, EntryContext } from "@remix-run/node";
 import { createReadableStreamFromReadable } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
-import isbot from "isbot";
+import * as isbotModule from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 
 const ABORT_DELAY = 5_000;
@@ -21,7 +15,10 @@ export default function handleRequest(
   remixContext: EntryContext,
   loadContext: AppLoadContext
 ) {
-  return isbot(request.headers.get("user-agent"))
+  let prohibitOutOfOrderStreaming =
+    isBotRequest(request.headers.get("user-agent")) || remixContext.isSpaMode;
+
+  return prohibitOutOfOrderStreaming
     ? handleBotRequest(
         request,
         responseStatusCode,
@@ -34,6 +31,27 @@ export default function handleRequest(
         responseHeaders,
         remixContext
       );
+}
+
+// We have some Remix apps in the wild already running with isbot@3 so we need
+// to maintain backwards compatibility even though we want new apps to use
+// isbot@4.  That way, we can ship this as a minor Semver update to @remix-run/dev.
+function isBotRequest(userAgent: string | null) {
+  if (!userAgent) {
+    return false;
+  }
+
+  // isbot >= 3.8.0, >4
+  if ("isbot" in isbotModule && typeof isbotModule.isbot === "function") {
+    return isbotModule.isbot(userAgent);
+  }
+
+  // isbot < 3.8.0
+  if ("default" in isbotModule && typeof isbotModule.default === "function") {
+    return isbotModule.default(userAgent);
+  }
+
+  return false;
 }
 
 function handleBotRequest(

@@ -4,7 +4,7 @@ function Skeleton({ count = 10 }) {
   return (
     <div
       role="status"
-      className="max-w-md p-4 space-y-4 border  divide-y  rounded shadow animate-pulse divide-linesLight md:p-6 border-linesLight"
+      className=" p-4 space-y-4 border  divide-y  rounded shadow animate-pulse divide-linesLight md:p-6 border-linesLight"
     >
       {[...Array(count).keys()].map((val, idx) => {
         return (

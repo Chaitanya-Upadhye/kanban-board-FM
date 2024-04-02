@@ -64,10 +64,12 @@ html[data-theme="dark"] #new-col {
 ::-webkit-scrollbar {
   width: 5px;
 }
-html[data-theme="dark"] li[data-active="true"] {
+html[data-theme="dark"] a[data-active="true"] {
   color: white;
 }
-
+aside[data-active="false"] {
+  margin-left: -300px;
+}
 /* Track */
 ::-webkit-scrollbar-track {
   background: #f1f1f1;

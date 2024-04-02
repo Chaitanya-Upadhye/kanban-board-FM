@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "@remix-run/react";
+import { Link, useNavigate, useParams } from "@remix-run/react";
 import { AddBoardModal } from "../EditBoardForm";
 import { useEffect, useState } from "react";
 import * as Switch from "@radix-ui/react-switch";
@@ -34,7 +34,8 @@ function Sidebar({ boards, setIsActive = () => {} }: { boards: any }) {
           {boards.map((board: any) => {
             const { id: boardId, title } = board;
             return (
-              <li
+              <Link
+                to={`/app/boards/${boardId}`}
                 key={boardId}
                 className={` hover:bg-slate-50   flex gap-4 items-end cursor-pointer pl-8   text-heading-m  ${
                   boardId == id
@@ -42,9 +43,6 @@ function Sidebar({ boards, setIsActive = () => {} }: { boards: any }) {
                     : "text-mediumGrey hover:bg-mainPurpleSecondary transition-all hover:text-mainPurple py-4 rounded-r-3xl"
                 } `}
                 data-active={boardId == id}
-                onClick={() => {
-                  navigate(`/app/boards/${boardId}`);
-                }}
               >
                 <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -55,7 +53,7 @@ function Sidebar({ boards, setIsActive = () => {} }: { boards: any }) {
                 <span className="text-slate-500 hover:text-blue-600 text-md ">
                   {title}
                 </span>
-              </li>
+              </Link>
             );
           })}
           <li

@@ -194,7 +194,9 @@ export const DeleteBoardModal = ({ open, setOpen, board }) => {
 export const EditBoardForm = ({ setOpen, editedBoard }) => {
   const { id } = useParams();
   const fetcher = useFetcher();
-  const [columns, setColumns] = useState([...(editedBoard?.columns || [])]);
+  const [columns, setColumns] = useState([
+    ...(editedBoard?.board_columns || []),
+  ]);
   const isDone = fetcher.state === "idle" && fetcher.data != null;
   // Function to handle subtask change
   const handleColumnChange = (index, event) => {
