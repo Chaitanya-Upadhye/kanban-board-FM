@@ -15,12 +15,9 @@ import Skeleton from "~/components/Skeleton";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await requireUserSession(request);
-  // const {data} = getSupabase({ request })
-  //   .from("tasks")
-  //   .select(`*`)
-  //   .eq("board_id", params.id);
+  const supabase = getSupabase({ request });
   const tasksPromise = new Promise((resolve, reject) => {
-    getSupabase({ request })
+    supabase
       .from("tasks")
       .select(`*`)
       .eq("board_id", params.id)
@@ -29,17 +26,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       })
       .catch((err) => resolve(err));
   });
-  const { data } = await getSupabase({ request })
+
+  const { data } = await supabase
     .from("board")
-    .select()
+    .select(`*,board_columns(id,title)`)
     .eq("id", params.id)
     .single();
-  const { data: boardDetails } = await getSupabase({ request })
-    .from("board_columns")
-    .select(`id,title`)
-    .eq("board_id", params.id);
+
   return defer({
-    board: { ...data, columns: boardDetails },
+    board: { ...data, columns: data?.board_columns },
     tasks: tasksPromise,
   });
 }
