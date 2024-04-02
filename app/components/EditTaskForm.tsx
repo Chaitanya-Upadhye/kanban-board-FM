@@ -242,7 +242,7 @@ export const AddTaskModal = ({ open, setOpen, cols }) => {
           <div className="my-6">
             <Input
               label={"Description"}
-              type="text"
+              type="text-area"
               name="description"
               id="description"
               required
@@ -395,7 +395,7 @@ export const EditTaskForm = ({ setOpen, cols, editedTask }) => {
         <Input
           defaultValue={editedTask?.description}
           label={"Description"}
-          type="text"
+          type="text-area"
           name="description"
           id="description"
           required

@@ -90,6 +90,7 @@ function Header({ cols = [], title = "", board }) {
                       const { id: boardId, title } = b;
                       return (
                         <li
+                          data-active={boardId == board.id}
                           key={boardId}
                           className={` hover:bg-slate-50   flex gap-4 items-end cursor-pointer pl-8   text-heading-m  ${
                             boardId == board?.id

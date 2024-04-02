@@ -41,6 +41,7 @@ function Sidebar({ boards, setIsActive = () => {} }: { boards: any }) {
                     ? "bg-mainPurple rounded-r-3xl text-white py-4"
                     : "text-mediumGrey hover:bg-mainPurpleSecondary transition-all hover:text-mainPurple py-4 rounded-r-3xl"
                 } `}
+                data-active={boardId == id}
                 onClick={() => {
                   navigate(`/app/boards/${boardId}`);
                 }}

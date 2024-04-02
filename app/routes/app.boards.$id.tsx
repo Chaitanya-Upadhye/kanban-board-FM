@@ -12,6 +12,8 @@ import {
   useSubmit,
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
+import { Button } from "~/components/Button";
+import { EditBoardModal } from "~/components/EditBoardForm";
 import { EditTaskModal } from "~/components/EditTaskForm";
 import Modal from "~/components/Modal";
 import Header from "~/components/layout/Header";
@@ -144,6 +146,7 @@ function BoardHome() {
       <div
         className={`flex gap-4 h-[90%] overflow-x-auto p-6 overflow-y-hidden bg-lightGreyLightBg`}
       >
+        {console.log(board.columns, "cols")}
         {board?.columns?.map((col) => {
           return (
             <div
@@ -186,14 +189,37 @@ function BoardHome() {
             </div>
           );
         })}
-        {/* <div
-          className=" rounded-md min-w-[250px] text-center p-4 border border-dashed border-slate-500 cursor-pointer "
+        {!board?.columns?.length ? (
+          <div className="flex items-center justify-center w-full">
+            <section className="flex flex-col items-center justify-center gap-4">
+              <span className="text-heading-l text-mediumGrey">
+                This board isempty. Create a new column to get started.
+              </span>
+              <Button
+                onClick={() => setOpenAddColModal(true)}
+                size={"lg"}
+                variant={"primary"}
+              >
+                <span className="text-heading-m text-[#fff]">
+                  + Add New Column
+                </span>
+              </Button>
+            </section>
+          </div>
+        ) : null}
+        <div
+          id="new-col"
+          className=" rounded-md min-w-[280px] bg-[#e9effa] text-center px-14 cursor-pointer flex items-center justify-center "
           onClick={() => setOpenAddColModal(true)}
         >
-          <p className="mt-auto mb-auto"> + New Column</p>
-        </div> */}
+          <p className="text-heading-xl text-mediumGrey"> + New Column</p>
+        </div>
         {openAddColModal ? (
-          <AddColModal open={openAddColModal} setOpen={setOpenAddColModal} />
+          <EditBoardModal
+            open={openAddColModal}
+            setOpen={setOpenAddColModal}
+            editedBoard={board}
+          />
         ) : null}
       </div>
     </>
@@ -268,76 +294,5 @@ const Task = ({ task, onClick = () => {} }) => {
     </>
   );
 };
-const AddColModal = ({ open, setOpen }) => {
-  const fetcher = useFetcher();
-  const { id } = useParams();
-  const [columns, setColumns] = useState([]);
-  const handleColChange = (index, event) => {
-    const newCols = [...columns];
-    newCols[index] = event.target.value;
-    setColumns(newCols);
-  };
 
-  const addCols = () => {
-    setColumns([...columns, ""]);
-  };
-  const isDone = fetcher.state === "idle" && fetcher.data != null;
-  useEffect(() => {
-    if (isDone) setOpen(false);
-
-    return () => {};
-  }, [isDone, setOpen]);
-
-  return (
-    <>
-      <Modal open={open} onOpenChange={setOpen}>
-        <Modal.Content>
-          <Modal.Header>
-            {" "}
-            <h2 className="text-lg font-semibold">Add Column</h2>
-          </Modal.Header>
-          <fetcher.Form method="post" action={`/app/boards/${id}/col`}>
-            <div className="relative z-0 w-full mb-5 group py-4">
-              <input type="hidden" name="taskId" defaultValue={""} />
-              {columns.map((c, idx) => {
-                return (
-                  <input
-                    key={idx}
-                    type="text"
-                    name="column"
-                    id="column"
-                    defaultValue={""}
-                    onChange={(e) => handleColChange(idx, e)}
-                    className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none    focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                    placeholder=" "
-                    value={c}
-                    required
-                  />
-                );
-              })}
-              <label
-                htmlFor="column"
-                className="peer-focus:font-medium absolute text-sm text-gray-500  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-              >
-                Column
-              </label>
-              <button
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                onClick={addCols}
-              >
-                Add columns
-              </button>
-            </div>
-            <button
-              type="submit"
-              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            >
-              Submit
-            </button>
-          </fetcher.Form>
-        </Modal.Content>
-      </Modal>
-    </>
-  );
-};
 export default BoardHome;

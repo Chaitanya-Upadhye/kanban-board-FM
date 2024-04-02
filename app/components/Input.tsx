@@ -15,7 +15,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         </label>
 
         <div className=" relative">
-          <input
+          <Comp
             type={type}
             className={cn(
               `rounded px-4 min-h-[40px] py-2 w-full block outline-none border border-mediumGrey/25 focus:${
@@ -42,6 +42,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     );
   }
 );
+const Comp = (props) => {
+  return props?.type === "text-area" ? (
+    <textarea {...props}></textarea>
+  ) : (
+    <input {...props}></input>
+  );
+};
 Input.displayName = "Input";
 
 export { Input };
