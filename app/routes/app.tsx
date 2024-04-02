@@ -30,10 +30,8 @@ function App() {
         <Header />{" "}
       </header> */}
         <aside
-          className={`col-start-1 w-[300px] row-span-full border-r  border-r-linesLight  rounded-sm transition-all ${
-            !isActive ? "ml-[-300px]  " : ""
-          } 
-          ${width <= 576 ? "invisible" : "block"}
+          data-active={isActive}
+          className={`col-start-1 w-[300px] row-span-full border-r  border-r-linesLight  rounded-sm transition-all invisible sm:visible
           `}
         >
           <Sidebar

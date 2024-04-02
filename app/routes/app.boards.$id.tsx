@@ -21,20 +21,27 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       .from("tasks")
       .select(`*`)
       .eq("board_id", params.id)
-      .then((data) => {
+      .then(async (data) => {
+        await new Promise((r) => setTimeout(r, 500));
+        resolve(data);
+      })
+      .catch((err) => resolve(err));
+  });
+  const boardsPromise = new Promise((resolve, reject) => {
+    supabase
+      .from("board")
+      .select(`*,board_columns(id,title)`)
+      .eq("id", params.id)
+      .single()
+      .then(async (data) => {
+        await new Promise((r) => setTimeout(r, 500));
         resolve(data);
       })
       .catch((err) => resolve(err));
   });
 
-  const { data } = await supabase
-    .from("board")
-    .select(`*,board_columns(id,title)`)
-    .eq("id", params.id)
-    .single();
-
   return defer({
-    board: { ...data, columns: data?.board_columns },
+    board: boardsPromise,
     tasks: tasksPromise,
   });
 }
@@ -119,105 +126,122 @@ function usePendingItems() {
 }
 
 function BoardHome() {
-  let { board, tasks } = useLoaderData();
+  let { board: boardDefferedPromise, tasks } = useLoaderData();
   const submit = useSubmit();
   const [openAddColModal, setOpenAddColModal] = useState(false);
-  // const pendingItems = usePendingItems();
-
-  // function getReconciledTasks() {
-  //   for (let task of tasks) {
-  //     let pendingTask = pendingItems.find((t) => t?.id === task.id);
-  //     if (pendingTask) {
-  //       task.col_id = pendingTask?.targetCol;
-  //       continue;
-  //     }
-  //   }
-  //   return tasks;
-  // }
 
   return (
     <>
       <header className=" col-start-2 col-span-1">
         {" "}
-        <Header cols={board?.columns} title={board?.title} board={board} />{" "}
+        <Suspense fallback={<Skeleton />}>
+          <Await resolve={boardDefferedPromise}>
+            {({ data: board }) => (
+              <Header
+                cols={board?.board_columns}
+                title={board?.title}
+                board={board}
+              />
+            )}
+          </Await>
+        </Suspense>
       </header>
       <div
         className={`flex gap-4 h-[90%] overflow-x-auto p-6 overflow-y-hidden bg-lightGreyLightBg`}
       >
-        {board?.columns?.map((col) => {
-          return (
-            <div
-              key={col.title}
-              className="min-w-[280px]"
-              onDragOver={(e) => {
-                e.preventDefault();
-              }}
-              onDrop={(e) => {
-                e.preventDefault();
+        <Suspense fallback={<Skeleton />}>
+          <Await resolve={boardDefferedPromise}>
+            {({ data: board }) => {
+              return (
+                <>
+                  {board?.board_columns?.map((col) => {
+                    return (
+                      <div
+                        key={col.title}
+                        className="min-w-[280px]"
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
 
-                const data = JSON.parse(e.dataTransfer.getData("text/plain"));
-                if (data.col_id == col.id) return;
+                          const data = JSON.parse(
+                            e.dataTransfer.getData("text/plain")
+                          );
+                          if (data.col_id == col.id) return;
 
-                submit(
-                  {
-                    taskDetails: JSON.stringify({ ...data, targetCol: col.id }),
-                  },
-                  {
-                    method: "post",
-                    navigate: false,
-                    fetcherKey: data?.id,
-                  }
-                );
-              }}
-            >
-              <span className="  flex gap-4 items-center">
-                <span className="w-3 h-3 rounded-full bg-mainPurple block "></span>{" "}
-                <span className="text-heading-s text-mediumGrey">
-                  {col.title?.toUpperCase()}
-                </span>
-              </span>
-              <div className="flex flex-col gap-[20px] mt-6 max-h-[80vh] hover:overflow-y-auto overflow-y-hidden pr-1">
-                <Suspense fallback={<Skeleton />}>
-                  <Await resolve={tasks}>
-                    {(tasksResolved) => (
-                      <TaskList
-                        col={col}
-                        cols={board?.columns}
-                        tasks={tasksResolved?.data}
-                      />
-                    )}
-                  </Await>
-                </Suspense>
-              </div>
-            </div>
-          );
-        })}
-        {!board?.columns?.length ? (
-          <div className="flex items-center justify-center w-full">
-            <section className="flex flex-col items-center justify-center gap-4">
-              <span className="text-heading-l text-mediumGrey text-center">
-                This board is empty. Create a new column to get started.
-              </span>
-              <Button
-                onClick={() => setOpenAddColModal(true)}
-                size={"lg"}
-                variant={"primary"}
-              >
-                <span className="text-heading-m text-[#fff]">
-                  + Add New Column
-                </span>
-              </Button>
-            </section>
-          </div>
-        ) : (
-          <div
-            id="new-col"
-            className=" mt-10 rounded-md min-w-[280px] bg-[#e9effa] text-center px-14 cursor-pointer flex items-center justify-center "
-            onClick={() => setOpenAddColModal(true)}
-          >
-            <p className="text-heading-xl text-mediumGrey"> + New Column</p>
-          </div>
-        )}
+                          submit(
+                            {
+                              taskDetails: JSON.stringify({
+                                ...data,
+                                targetCol: col.id,
+                              }),
+                            },
+                            {
+                              method: "post",
+                              navigate: false,
+                              fetcherKey: data?.id,
+                            }
+                          );
+                        }}
+                      >
+                        <span className="  flex gap-4 items-center">
+                          <span className="w-3 h-3 rounded-full bg-mainPurple block "></span>{" "}
+                          <span className="text-heading-s text-mediumGrey">
+                            {col.title?.toUpperCase()}
+                          </span>
+                        </span>
+                        <div className="flex flex-col gap-[20px] mt-6 max-h-[80vh] hover:overflow-y-auto overflow-y-hidden pr-1">
+                          <Suspense fallback={"Loading"} key={Math.random()}>
+                            <Await resolve={tasks}>
+                              {(tasksResolved) => (
+                                <TaskList
+                                  col={col}
+                                  cols={board?.board_columns}
+                                  tasks={tasksResolved?.data}
+                                />
+                              )}
+                            </Await>
+                          </Suspense>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {!board?.board_columns?.length ? (
+                    <div className="flex items-center justify-center w-full">
+                      <section className="flex flex-col items-center justify-center gap-4">
+                        <span className="text-heading-l text-mediumGrey text-center">
+                          This board is empty. Create a new column to get
+                          started.
+                        </span>
+                        <Button
+                          onClick={() => setOpenAddColModal(true)}
+                          size={"lg"}
+                          variant={"primary"}
+                        >
+                          <span className="text-heading-m text-[#fff]">
+                            + Add New Column
+                          </span>
+                        </Button>
+                      </section>
+                    </div>
+                  ) : (
+                    <div
+                      id="new-col"
+                      className=" mt-10 rounded-md min-w-[280px] bg-[#e9effa] text-center px-14 cursor-pointer flex items-center justify-center "
+                      onClick={() => setOpenAddColModal(true)}
+                    >
+                      <p className="text-heading-xl text-mediumGrey">
+                        {" "}
+                        + New Column
+                      </p>
+                    </div>
+                  )}
+                </>
+              );
+            }}
+          </Await>
+        </Suspense>
 
         {openAddColModal ? (
           <EditBoardModal
@@ -231,7 +255,6 @@ function BoardHome() {
   );
 }
 const TaskList = ({ col, cols, tasks }) => {
-  console.log(tasks, "tasks");
   const [open, setOpen] = useState(false);
   const [editedTask, setEditedTask] = useState(null);
   const pendingItems = usePendingItems();

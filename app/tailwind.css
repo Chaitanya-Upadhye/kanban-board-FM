@@ -67,7 +67,9 @@ html[data-theme="dark"] #new-col {
 html[data-theme="dark"] li[data-active="true"] {
   color: white;
 }
-
+aside[data-active="false"] {
+  margin-left: -300px;
+}
 /* Track */
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
