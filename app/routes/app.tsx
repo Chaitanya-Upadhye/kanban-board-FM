@@ -33,7 +33,7 @@ function App() {
           className={`col-start-1 w-[300px] row-span-full border-r  border-r-linesLight  rounded-sm transition-all ${
             !isActive ? "ml-[-300px]  " : ""
           } 
-          ${width <= 576 ? "hidden" : "block"}
+          ${width <= 576 ? "invisible" : "block"}
           `}
         >
           <Sidebar

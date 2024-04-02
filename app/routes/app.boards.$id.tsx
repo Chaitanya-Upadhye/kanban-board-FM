@@ -1,26 +1,34 @@
-import * as Dialog from "@radix-ui/react-dialog";
 import {
   type ActionFunctionArgs,
   json,
   type LoaderFunctionArgs,
 } from "@remix-run/node";
-import {
-  useFetcher,
-  useFetchers,
-  useLoaderData,
-  useParams,
-  useSubmit,
-} from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useFetchers, useLoaderData, useSubmit, Await } from "@remix-run/react";
+import { useState, Suspense } from "react";
 import { Button } from "~/components/Button";
 import { EditBoardModal } from "~/components/EditBoardForm";
 import { EditTaskModal } from "~/components/EditTaskForm";
-import Modal from "~/components/Modal";
 import Header from "~/components/layout/Header";
 import { getSupabase, requireUserSession } from "~/session";
+import { defer } from "@remix-run/node";
+import Skeleton from "~/components/Skeleton";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   await requireUserSession(request);
+  // const {data} = getSupabase({ request })
+  //   .from("tasks")
+  //   .select(`*`)
+  //   .eq("board_id", params.id);
+  const tasksPromise = new Promise((resolve, reject) => {
+    getSupabase({ request })
+      .from("tasks")
+      .select(`*`)
+      .eq("board_id", params.id)
+      .then((data) => {
+        resolve(data);
+      })
+      .catch((err) => resolve(err));
+  });
   const { data } = await getSupabase({ request })
     .from("board")
     .select()
@@ -30,14 +38,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     .from("board_columns")
     .select(`id,title`)
     .eq("board_id", params.id);
-  const { data: tasks } = await getSupabase({ request })
-    .from("tasks")
-    .select(`*`)
-    .eq("board_id", params.id);
-
-  return json({
+  return defer({
     board: { ...data, columns: boardDetails },
-    tasks,
+    tasks: tasksPromise,
   });
 }
 
@@ -121,21 +124,21 @@ function usePendingItems() {
 }
 
 function BoardHome() {
-  let { board, tasks = [] } = useLoaderData();
+  let { board, tasks } = useLoaderData();
   const submit = useSubmit();
   const [openAddColModal, setOpenAddColModal] = useState(false);
-  const pendingItems = usePendingItems();
+  // const pendingItems = usePendingItems();
 
-  function getReconciledTasks() {
-    for (let task of tasks) {
-      let pendingTask = pendingItems.find((t) => t?.id === task.id);
-      if (pendingTask) {
-        task.col_id = pendingTask?.targetCol;
-        continue;
-      }
-    }
-    return tasks;
-  }
+  // function getReconciledTasks() {
+  //   for (let task of tasks) {
+  //     let pendingTask = pendingItems.find((t) => t?.id === task.id);
+  //     if (pendingTask) {
+  //       task.col_id = pendingTask?.targetCol;
+  //       continue;
+  //     }
+  //   }
+  //   return tasks;
+  // }
 
   return (
     <>
@@ -146,7 +149,6 @@ function BoardHome() {
       <div
         className={`flex gap-4 h-[90%] overflow-x-auto p-6 overflow-y-hidden bg-lightGreyLightBg`}
       >
-        {console.log(board.columns, "cols")}
         {board?.columns?.map((col) => {
           return (
             <div
@@ -180,11 +182,17 @@ function BoardHome() {
                 </span>
               </span>
               <div className="flex flex-col gap-[20px] mt-6 max-h-[80vh] hover:overflow-y-auto overflow-y-hidden pr-1">
-                <TaskList
-                  tasksState={[...getReconciledTasks()]}
-                  col={col}
-                  cols={board?.columns}
-                />
+                <Suspense fallback={<Skeleton />}>
+                  <Await resolve={tasks}>
+                    {(tasksResolved) => (
+                      <TaskList
+                        col={col}
+                        cols={board?.columns}
+                        tasks={tasksResolved?.data}
+                      />
+                    )}
+                  </Await>
+                </Suspense>
               </div>
             </div>
           );
@@ -192,8 +200,8 @@ function BoardHome() {
         {!board?.columns?.length ? (
           <div className="flex items-center justify-center w-full">
             <section className="flex flex-col items-center justify-center gap-4">
-              <span className="text-heading-l text-mediumGrey">
-                This board isempty. Create a new column to get started.
+              <span className="text-heading-l text-mediumGrey text-center">
+                This board is empty. Create a new column to get started.
               </span>
               <Button
                 onClick={() => setOpenAddColModal(true)}
@@ -206,14 +214,16 @@ function BoardHome() {
               </Button>
             </section>
           </div>
-        ) : null}
-        <div
-          id="new-col"
-          className=" mt-10 rounded-md min-w-[280px] bg-[#e9effa] text-center px-14 cursor-pointer flex items-center justify-center "
-          onClick={() => setOpenAddColModal(true)}
-        >
-          <p className="text-heading-xl text-mediumGrey"> + New Column</p>
-        </div>
+        ) : (
+          <div
+            id="new-col"
+            className=" mt-10 rounded-md min-w-[280px] bg-[#e9effa] text-center px-14 cursor-pointer flex items-center justify-center "
+            onClick={() => setOpenAddColModal(true)}
+          >
+            <p className="text-heading-xl text-mediumGrey"> + New Column</p>
+          </div>
+        )}
+
         {openAddColModal ? (
           <EditBoardModal
             open={openAddColModal}
@@ -225,12 +235,24 @@ function BoardHome() {
     </>
   );
 }
-const TaskList = ({ tasksState, col, cols }) => {
+const TaskList = ({ col, cols, tasks }) => {
+  console.log(tasks, "tasks");
   const [open, setOpen] = useState(false);
   const [editedTask, setEditedTask] = useState(null);
+  const pendingItems = usePendingItems();
+  function getReconciledTasks() {
+    for (let task of tasks) {
+      let pendingTask = pendingItems.find((t) => t?.id === task.id);
+      if (pendingTask) {
+        task.col_id = pendingTask?.targetCol;
+        continue;
+      }
+    }
+    return tasks;
+  }
   return (
     <>
-      {tasksState
+      {getReconciledTasks()
         ?.filter((t) => {
           if (t?.targetCol) return t.targetCol === col.id;
           return t.col_id == col.id;
@@ -266,7 +288,7 @@ const Task = ({ task, onClick = () => {} }) => {
     <>
       <div
         draggable
-        className={`bg-white rounded-lg group  px-4 py-6 shadow-mds font-normal text-black hover:cursor-grab min-h-[88px] shadow-task-card
+        className={`transition-all bg-white rounded-lg group  px-4 py-6 shadow-mds font-normal text-black hover:cursor-grab min-h-[88px] shadow-task-card
       ${
         taskFetcher?.state === "submitting"
           ? "  bg-slate-300 text-slate-400"
