@@ -292,7 +292,7 @@ const Task = ({ task, onClick = () => {} }) => {
       <div
         draggable
         className={`transition-all bg-white rounded-lg group  px-4 py-6 shadow-mds font-normal text-black hover:cursor-grab min-h-[88px] shadow-task-card
-      ${taskFetcher?.state === "submitting" ? "  opacity-5" : ""}
+      ${taskFetcher?.state === "submitting" ? "  opacity-35" : ""}
         `}
         onDragStart={(e) => {
           e.dataTransfer.setData("text/plain", JSON.stringify(task));
