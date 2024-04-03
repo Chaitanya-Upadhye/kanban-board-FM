@@ -87,7 +87,7 @@ export const EditTaskModal = ({ open, setOpen, editedTask, cols }) => {
           <EditTaskForm
             editedTask={editedTask}
             cols={cols}
-            setOpen={() => setIsBeingEdited(false)}
+            setOpen={setOpen}
             fetcher={fetcher}
           />
         ) : (

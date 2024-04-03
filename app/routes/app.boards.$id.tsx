@@ -35,20 +35,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       })
       .catch((err) => resolve(err));
   });
-  const boardPromise = new Promise((resolve, reject) => {
-    supabase
-      .from("board")
-      .select(`*,board_columns(id,title)`)
-      .eq("id", params.id)
-      .single()
-      .then(async (data) => {
-        resolve(data);
-      })
-      .catch((err) => resolve(err));
-  });
+  const { data } = await supabase
+    .from("board")
+    .select(`*,board_columns(id,title)`)
+    .eq("id", params.id)
+    .single();
 
   return defer({
-    boardPromise,
+    board: data,
     tasks: tasksPromise,
   });
 }
@@ -133,7 +127,7 @@ function usePendingItems() {
 }
 
 function BoardHome() {
-  let { boardPromise, tasks } = useLoaderData();
+  let { board, tasks } = useLoaderData();
   const submit = useSubmit();
   const [openAddColModal, setOpenAddColModal] = useState(false);
 
@@ -141,136 +135,106 @@ function BoardHome() {
     <>
       <header className=" col-start-2 col-span-1">
         {" "}
-        <Suspense fallback={<Skeleton />}>
-          <Await resolve={boardPromise}>
-            {({ data: board }) => {
-              return (
-                <Header
-                  cols={board?.board_columns}
-                  title={board?.title}
-                  board={board}
-                />
-              );
-            }}
-          </Await>
-        </Suspense>
+        <Header
+          cols={board?.board_columns}
+          title={board?.title}
+          board={board}
+        />
       </header>
       <div
         className={`flex gap-4 sm:h-[90%] h-full overflow-x-auto p-6 overflow-y-hidden bg-lightGreyLightBg`}
       >
-        <Suspense fallback={<Skeleton />} key={Math.random()}>
-          <Await resolve={boardPromise}>
-            {({ data: board = { title: "", board_columns: [] } }) => {
-              return (
-                <>
-                  {board?.board_columns?.map((col) => {
-                    return (
-                      <div
-                        key={col.title}
-                        className="min-w-[280px]"
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                        }}
-                        onDrop={(e) => {
-                          e.preventDefault();
+        <>
+          {board?.board_columns?.map((col) => {
+            return (
+              <div
+                key={col.title}
+                className="min-w-[280px]"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
 
-                          const data = JSON.parse(
-                            e.dataTransfer.getData("text/plain")
-                          );
-                          if (data.col_id == col.id) return;
+                  const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+                  if (data.col_id == col.id) return;
 
-                          submit(
-                            {
-                              taskDetails: JSON.stringify({
-                                ...data,
-                                targetCol: col.id,
-                              }),
-                            },
-                            {
-                              method: "post",
-                              navigate: false,
-                              fetcherKey: data?.id,
-                            }
-                          );
-                        }}
-                      >
-                        <span className="  flex gap-4 items-center">
-                          <span className="w-3 h-3 rounded-full bg-mainPurple block "></span>{" "}
-                          <span className="text-heading-s text-mediumGrey">
-                            {col.title?.toUpperCase()}
-                          </span>
-                        </span>
-                        <div className="flex flex-col gap-[20px] mt-6 max-h-[80vh] hover:overflow-y-auto overflow-y-hidden pr-1">
-                          <Suspense fallback={<Skeleton />}>
-                            <Await resolve={tasks}>
-                              {({ data: tasks }) => {
-                                return (
-                                  <TaskList
-                                    col={col}
-                                    cols={board?.board_columns}
-                                    tasks={tasks}
-                                  />
-                                );
-                              }}
-                            </Await>
-                          </Suspense>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  submit(
+                    {
+                      taskDetails: JSON.stringify({
+                        ...data,
+                        targetCol: col.id,
+                      }),
+                    },
+                    {
+                      method: "post",
+                      navigate: false,
+                      fetcherKey: data?.id,
+                    }
+                  );
+                }}
+              >
+                <span className="  flex gap-4 items-center">
+                  <span className="w-3 h-3 rounded-full bg-mainPurple block "></span>{" "}
+                  <span className="text-heading-s text-mediumGrey">
+                    {col.title?.toUpperCase()}
+                  </span>
+                </span>
+                <div className="flex flex-col gap-[20px] mt-6 max-h-[80vh] hover:overflow-y-auto overflow-y-hidden pr-1">
                   <Suspense fallback={<Skeleton />}>
                     <Await resolve={tasks}>
                       {({ data: tasks }) => {
                         return (
-                          <>
-                            {!board?.board_columns?.length ? (
-                              <div className="flex items-center justify-center w-full">
-                                <section className="flex flex-col items-center justify-center gap-4">
-                                  <span className="text-heading-l text-mediumGrey text-center">
-                                    This board is empty. Create a new column to
-                                    get started.
-                                  </span>
-                                  <Button
-                                    onClick={() => setOpenAddColModal(true)}
-                                    size={"lg"}
-                                    variant={"primary"}
-                                  >
-                                    <span className="text-heading-m text-[#fff]">
-                                      + Add New Column
-                                    </span>
-                                  </Button>
-                                </section>
-                              </div>
-                            ) : (
-                              <div
-                                id="new-col"
-                                className=" mt-10 rounded-md min-w-[280px] bg-[#e9effa] text-center px-14 cursor-pointer flex items-center justify-center "
-                                onClick={() => setOpenAddColModal(true)}
-                              >
-                                <p className="text-heading-xl text-mediumGrey">
-                                  {" "}
-                                  + New Column
-                                </p>
-                              </div>
-                            )}
-
-                            {openAddColModal ? (
-                              <EditBoardModal
-                                open={openAddColModal}
-                                setOpen={setOpenAddColModal}
-                                editedBoard={board}
-                              />
-                            ) : null}
-                          </>
+                          <TaskList
+                            col={col}
+                            cols={board?.board_columns}
+                            tasks={tasks}
+                          />
                         );
                       }}
                     </Await>
                   </Suspense>
-                </>
-              );
-            }}
-          </Await>
-        </Suspense>
+                </div>
+              </div>
+            );
+          })}
+          <>
+            {!board?.board_columns?.length ? (
+              <div className="flex items-center justify-center w-full">
+                <section className="flex flex-col items-center justify-center gap-4">
+                  <span className="text-heading-l text-mediumGrey text-center">
+                    This board is empty. Create a new column to get started.
+                  </span>
+                  <Button
+                    onClick={() => setOpenAddColModal(true)}
+                    size={"lg"}
+                    variant={"primary"}
+                  >
+                    <span className="text-heading-m text-[#fff]">
+                      + Add New Column
+                    </span>
+                  </Button>
+                </section>
+              </div>
+            ) : (
+              <div
+                id="new-col"
+                className=" mt-10 rounded-md min-w-[280px] bg-[#e9effa] text-center px-14 cursor-pointer flex items-center justify-center "
+                onClick={() => setOpenAddColModal(true)}
+              >
+                <p className="text-heading-xl text-mediumGrey"> + New Column</p>
+              </div>
+            )}
+
+            {openAddColModal ? (
+              <EditBoardModal
+                open={openAddColModal}
+                setOpen={setOpenAddColModal}
+                editedBoard={board}
+              />
+            ) : null}
+          </>
+        </>
       </div>
     </>
   );
@@ -289,7 +253,6 @@ const TaskList = ({ col, cols, tasks }) => {
     }
     return tasks;
   }
-  console.log(open);
   return (
     <>
       {getReconciledTasks()
@@ -329,11 +292,7 @@ const Task = ({ task, onClick = () => {} }) => {
       <div
         draggable
         className={`transition-all bg-white rounded-lg group  px-4 py-6 shadow-mds font-normal text-black hover:cursor-grab min-h-[88px] shadow-task-card
-      ${
-        taskFetcher?.state === "submitting"
-          ? "  bg-slate-300 text-slate-400"
-          : ""
-      }
+      ${taskFetcher?.state === "submitting" ? "  opacity-5" : ""}
         `}
         onDragStart={(e) => {
           e.dataTransfer.setData("text/plain", JSON.stringify(task));
