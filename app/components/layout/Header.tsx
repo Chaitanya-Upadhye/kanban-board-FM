@@ -17,7 +17,7 @@ import * as Switch from "@radix-ui/react-switch";
 
 function Header({ cols = [], title = "", board }) {
   const [isOpen, setIsOpen] = useState(false);
-  const { width } = useWindowSize();
+  const { isMobile } = useWindowSize();
   const [showEditBoardModal, setShowEditBoardModal] = useState(false);
   const [showDeleteBoardModal, setShowDeleteBoardModal] = useState(false);
   const {
@@ -32,11 +32,11 @@ function Header({ cols = [], title = "", board }) {
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
-    width <= 576 && setIsActive(false);
+    isMobile && setIsActive(false);
     return () => {};
-  }, [width]);
+  }, [isMobile]);
 
-  if (width <= 576) {
+  if (isMobile) {
     return (
       <div
         className={`bg-white h-16 px-4 py-5  border-b border-b-linesLight flex justify-between items-center
@@ -385,8 +385,8 @@ export function useWindowSize() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-
-  return windowSize;
+  let isMobile = windowSize.width <= 576;
+  return { windowSize, isMobile };
 }
 export default Header;
 // write a useWindowSize hook to get the window size and use it in the Header component

@@ -19,7 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 function App() {
   const userBoards = useLoaderData<typeof loader>();
-  const { width } = useWindowSize();
+  const { isMobile } = useWindowSize();
   const [isActive, setIsActive] = useState(true);
   const { supabase } = useOutletContext();
   return (
@@ -50,7 +50,7 @@ function App() {
         Footer
       </footer> */}
       </div>
-      {!isActive && width > 576 ? (
+      {!isActive && !isMobile ? (
         <div
           onClick={() => setIsActive(true)}
           className="absolute bottom-8 bg-mainPurple rounded-r-3xl cursor-pointer "

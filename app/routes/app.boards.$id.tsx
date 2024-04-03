@@ -9,8 +9,10 @@ import {
   useSubmit,
   Await,
   useParams,
+  useFetcher,
+  useNavigation,
 } from "@remix-run/react";
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { Button } from "~/components/Button";
 import { EditBoardModal } from "~/components/EditBoardForm";
 import { EditTaskModal } from "~/components/EditTaskForm";
@@ -28,26 +30,25 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       .select(`*`)
       .eq("board_id", params.id)
       .then(async (data) => {
-        await new Promise((r) => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, 2000));
         resolve(data);
       })
       .catch((err) => resolve(err));
   });
-  const boardsPromise = new Promise((resolve, reject) => {
+  const boardPromise = new Promise((resolve, reject) => {
     supabase
       .from("board")
       .select(`*,board_columns(id,title)`)
       .eq("id", params.id)
       .single()
       .then(async (data) => {
-        await new Promise((r) => setTimeout(r, 500));
         resolve(data);
       })
       .catch((err) => resolve(err));
   });
 
   return defer({
-    board: boardsPromise,
+    boardPromise,
     tasks: tasksPromise,
   });
 }
@@ -132,9 +133,8 @@ function usePendingItems() {
 }
 
 function BoardHome() {
-  let { board: boardDefferedPromise, tasks } = useLoaderData();
+  let { boardPromise, tasks } = useLoaderData();
   const submit = useSubmit();
-  const { id } = useParams();
   const [openAddColModal, setOpenAddColModal] = useState(false);
 
   return (
@@ -142,23 +142,25 @@ function BoardHome() {
       <header className=" col-start-2 col-span-1">
         {" "}
         <Suspense fallback={<Skeleton />}>
-          <Await resolve={boardDefferedPromise}>
-            {({ data: board }) => (
-              <Header
-                cols={board?.board_columns}
-                title={board?.title}
-                board={board}
-              />
-            )}
+          <Await resolve={boardPromise}>
+            {({ data: board }) => {
+              return (
+                <Header
+                  cols={board?.board_columns}
+                  title={board?.title}
+                  board={board}
+                />
+              );
+            }}
           </Await>
         </Suspense>
       </header>
       <div
-        className={`flex gap-4 h-[90%] overflow-x-auto p-6 overflow-y-hidden bg-lightGreyLightBg`}
+        className={`flex gap-4 sm:h-[90%] h-full overflow-x-auto p-6 overflow-y-hidden bg-lightGreyLightBg`}
       >
-        <Suspense fallback={<Skeleton />}>
-          <Await resolve={boardDefferedPromise}>
-            {({ data: board }) => {
+        <Suspense fallback={<Skeleton />} key={Math.random()}>
+          <Await resolve={boardPromise}>
+            {({ data: board = { title: "", board_columns: [] } }) => {
               return (
                 <>
                   {board?.board_columns?.map((col) => {
@@ -199,15 +201,17 @@ function BoardHome() {
                           </span>
                         </span>
                         <div className="flex flex-col gap-[20px] mt-6 max-h-[80vh] hover:overflow-y-auto overflow-y-hidden pr-1">
-                          <Suspense fallback={"Loading"} key={id}>
+                          <Suspense fallback={<Skeleton />}>
                             <Await resolve={tasks}>
-                              {(tasksResolved) => (
-                                <TaskList
-                                  col={col}
-                                  cols={board?.board_columns}
-                                  tasks={tasksResolved?.data}
-                                />
-                              )}
+                              {({ data: tasks }) => {
+                                return (
+                                  <TaskList
+                                    col={col}
+                                    cols={board?.board_columns}
+                                    tasks={tasks}
+                                  />
+                                );
+                              }}
                             </Await>
                           </Suspense>
                         </div>

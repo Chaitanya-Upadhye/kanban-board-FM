@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "@remix-run/react";
+import { useNavigate, useNavigation, useParams } from "@remix-run/react";
 import { AddBoardModal } from "../EditBoardForm";
 import { useEffect, useState } from "react";
 import * as Switch from "@radix-ui/react-switch";
@@ -8,7 +8,7 @@ function Sidebar({ boards, setIsActive = () => {} }: { boards: any }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-
+  const navigation = useNavigation();
   return (
     <nav className="flex flex-col h-full bg-white ">
       <div className="pt-8 pl-8  h-[96px]">
