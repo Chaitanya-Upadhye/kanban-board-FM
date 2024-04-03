@@ -23,9 +23,6 @@ export default function Login() {
   };
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
   return (
     <div className=" h-screen">
       <section className="flex  justify-center h-full items-center bg-white">
@@ -79,6 +76,9 @@ export default function Login() {
           >
             <span className="text-[#fff]">Login</span>
           </Button>
+          <span className="text-body-l text-mediumGrey underline mt-4">
+            Please use these pre-selected credentials for now! &#128517;
+          </span>
         </div>
       </section>
       {/* <button onClick={handleEmailLogin}>Email Login</button>
