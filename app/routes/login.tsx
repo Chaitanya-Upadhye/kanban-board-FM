@@ -71,7 +71,9 @@ export default function Login() {
             disabled={disabled || isSubmitting}
             variant={"primary"}
             size={"lg"}
-            className={`${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
+            className={`disabled:opacity-20 ${
+              disabled ? "opacity-40 cursor-not-allowed " : ""
+            }`}
             onClick={handleEmailLogin}
           >
             <span className="text-[#fff]">Login</span>

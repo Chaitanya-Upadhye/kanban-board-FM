@@ -344,9 +344,7 @@ export const EditTaskForm = ({ setOpen, cols, editedTask }) => {
   const { id } = useParams();
   const data = useLoaderData();
   const fetcher = useFetcher();
-  const [subTasks, setSubTasks] = useState([
-    ...(data?.tasks?.find((t) => t?.id === editedTask?.id)?.subTasks || []),
-  ]);
+  const [subTasks, setSubTasks] = useState([...(editedTask?.subTasks || [])]);
   const isDone = fetcher.state === "idle" && fetcher.data != null;
   // Function to handle subtask change
   const handleSubtaskChange = (index, event) => {
