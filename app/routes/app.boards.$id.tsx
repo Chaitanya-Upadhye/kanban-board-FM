@@ -30,7 +30,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       .select(`*`)
       .eq("board_id", params.id)
       .then(async (data) => {
-        await new Promise((r) => setTimeout(r, 2000));
         resolve(data);
       })
       .catch((err) => resolve(err));
