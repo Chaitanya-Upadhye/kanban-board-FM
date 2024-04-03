@@ -342,7 +342,6 @@ export const AddTaskModal = ({ open, setOpen, cols }) => {
 
 export const EditTaskForm = ({ setOpen, cols, editedTask }) => {
   const { id } = useParams();
-  const data = useLoaderData();
   const fetcher = useFetcher();
   const [subTasks, setSubTasks] = useState([...(editedTask?.subTasks || [])]);
   const isDone = fetcher.state === "idle" && fetcher.data != null;

@@ -8,11 +8,12 @@ const buttonVariants = cva("", {
   variants: {
     variant: {
       destructive:
-        "bg-red text-body-m text-white hover:bg-red/10 transition-all hover:bg-redHover",
+        "bg-red text-body-m text-white hover:bg-red/10 transition-all hover:bg-redHover disabled:opacity-20",
       primary:
-        "bg-mainPurple text-white hover:bg-mainPurpleHover transition-all ",
+        "bg-mainPurple text-white hover:bg-mainPurpleHover transition-all disabled:opacity-20 ",
 
-      secondary: "bg-mainPurpleSecondary text-mainPurple transition-all ",
+      secondary:
+        "bg-mainPurpleSecondary text-mainPurple transition-all disabled:opacity-20 ",
     },
     size: {
       sm: "min-h-[40px] text-body-m py-2 px-6 rounded-3xl",

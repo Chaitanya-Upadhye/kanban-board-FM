@@ -218,49 +218,59 @@ function BoardHome() {
                       </div>
                     );
                   })}
-                  {!board?.board_columns?.length ? (
-                    <div className="flex items-center justify-center w-full">
-                      <section className="flex flex-col items-center justify-center gap-4">
-                        <span className="text-heading-l text-mediumGrey text-center">
-                          This board is empty. Create a new column to get
-                          started.
-                        </span>
-                        <Button
-                          onClick={() => setOpenAddColModal(true)}
-                          size={"lg"}
-                          variant={"primary"}
-                        >
-                          <span className="text-heading-m text-[#fff]">
-                            + Add New Column
-                          </span>
-                        </Button>
-                      </section>
-                    </div>
-                  ) : (
-                    <div
-                      id="new-col"
-                      className=" mt-10 rounded-md min-w-[280px] bg-[#e9effa] text-center px-14 cursor-pointer flex items-center justify-center "
-                      onClick={() => setOpenAddColModal(true)}
-                    >
-                      <p className="text-heading-xl text-mediumGrey">
-                        {" "}
-                        + New Column
-                      </p>
-                    </div>
-                  )}
+                  <Suspense fallback={<Skeleton />}>
+                    <Await resolve={tasks}>
+                      {({ data: tasks }) => {
+                        return (
+                          <>
+                            {!board?.board_columns?.length ? (
+                              <div className="flex items-center justify-center w-full">
+                                <section className="flex flex-col items-center justify-center gap-4">
+                                  <span className="text-heading-l text-mediumGrey text-center">
+                                    This board is empty. Create a new column to
+                                    get started.
+                                  </span>
+                                  <Button
+                                    onClick={() => setOpenAddColModal(true)}
+                                    size={"lg"}
+                                    variant={"primary"}
+                                  >
+                                    <span className="text-heading-m text-[#fff]">
+                                      + Add New Column
+                                    </span>
+                                  </Button>
+                                </section>
+                              </div>
+                            ) : (
+                              <div
+                                id="new-col"
+                                className=" mt-10 rounded-md min-w-[280px] bg-[#e9effa] text-center px-14 cursor-pointer flex items-center justify-center "
+                                onClick={() => setOpenAddColModal(true)}
+                              >
+                                <p className="text-heading-xl text-mediumGrey">
+                                  {" "}
+                                  + New Column
+                                </p>
+                              </div>
+                            )}
+
+                            {openAddColModal ? (
+                              <EditBoardModal
+                                open={openAddColModal}
+                                setOpen={setOpenAddColModal}
+                                editedBoard={board}
+                              />
+                            ) : null}
+                          </>
+                        );
+                      }}
+                    </Await>
+                  </Suspense>
                 </>
               );
             }}
           </Await>
         </Suspense>
-
-        {openAddColModal ? (
-          <EditBoardModal
-            open={openAddColModal}
-            setOpen={setOpenAddColModal}
-            editedBoard={board}
-          />
-        ) : null}
       </div>
     </>
   );
@@ -279,6 +289,7 @@ const TaskList = ({ col, cols, tasks }) => {
     }
     return tasks;
   }
+  console.log(open);
   return (
     <>
       {getReconciledTasks()
